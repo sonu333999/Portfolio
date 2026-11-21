@@ -1,0 +1,281 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Core helper primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isVerifiedUser() && request.auth.token.email == 'sonukhajotiya01@gmail.com';
+    }
+
+    function isValidString(val, minLen, maxLen) {
+      return val is string && val.size() >= minLen && val.size() <= maxLen;
+    }
+
+    function isValidOptionalUrl(val, maxLen) {
+      return val is string && val.size() <= maxLen && (val == '' || val.matches('^https?://.*'));
+    }
+
+    function isValidCoverImage(val) {
+      return val is string
+        && val.size() <= 600
+        && (val == '' || val.matches('^https?://.*') || val.matches('^/src/assets/.*'));
+    }
+
+    function isValidTechStack(arr) {
+      return arr is list
+        && arr.size() <= 12
+        && (arr.size() == 0 || (arr[0] is string && arr[0].size() >= 1 && arr[0].size() <= 40));
+    }
+
+    // Entity validation helpers
+    function isValidProfile(data) {
+      return data.keys().hasAll([
+          'fullName', 'headline', 'bio', 'institution', 'degree',
+          'graduationPeriod', 'cgpa', 'cgpaVerified', 'location', 'email',
+          'phone', 'resumeUrl', 'githubUrl', 'linkedinUrl', 'behanceUrl', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'fullName', 'headline', 'bio', 'institution', 'degree',
+          'graduationPeriod', 'cgpa', 'cgpaVerified', 'location', 'email',
+          'phone', 'resumeUrl', 'githubUrl', 'linkedinUrl', 'behanceUrl', 'updatedAt'
+        ])
+        && isValidString(data.fullName, 2, 80)
+        && isValidString(data.headline, 2, 140)
+        && isValidString(data.bio, 10, 1200)
+        && isValidString(data.institution, 2, 160)
+        && isValidString(data.degree, 2, 120)
+        && isValidString(data.graduationPeriod, 4, 40)
+        && isValidString(data.cgpa, 1, 20)
+        && data.cgpaVerified is bool
+        && isValidString(data.location, 2, 120)
+        && isValidString(data.email, 5, 120)
+        && isValidString(data.phone, 0, 32)
+        && isValidOptionalUrl(data.resumeUrl, 500)
+        && isValidOptionalUrl(data.githubUrl, 300)
+        && isValidOptionalUrl(data.linkedinUrl, 300)
+        && isValidOptionalUrl(data.behanceUrl, 300)
+        && data.updatedAt == request.time;
+    }
+
+    function isValidProject(data) {
+      return data.keys().hasAll([
+          'title', 'slug', 'category', 'summary', 'description',
+          'techStack', 'role', 'timeline', 'liveUrl', 'repoUrl',
+          'coverImage', 'featured', 'status', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'title', 'slug', 'category', 'summary', 'description',
+          'techStack', 'role', 'timeline', 'liveUrl', 'repoUrl',
+          'coverImage', 'featured', 'status', 'createdAt', 'updatedAt'
+        ])
+        && isValidString(data.title, 2, 120)
+        && isValidString(data.slug, 2, 120)
+        && data.slug.matches('^[a-z0-9-]+$')
+        && data.category in [
+          'UI/UX Design',
+          'Frontend Development',
+          'AI & Machine Learning',
+          'Data Science',
+          'Software Engineering'
+        ]
+        && isValidString(data.summary, 10, 320)
+        && isValidString(data.description, 10, 4000)
+        && isValidTechStack(data.techStack)
+        && isValidString(data.role, 0, 100)
+        && isValidString(data.timeline, 0, 60)
+        && isValidOptionalUrl(data.liveUrl, 400)
+        && isValidOptionalUrl(data.repoUrl, 400)
+        && isValidCoverImage(data.coverImage)
+        && data.featured is bool
+        && data.status in ['draft', 'published']
+        && data.createdAt is timestamp
+        && data.updatedAt == request.time;
+    }
+
+    function isValidAchievement(data) {
+      return data.keys().hasAll([
+          'title', 'issuer', 'category', 'dateLabel', 'credentialUrl',
+          'summary', 'status', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'title', 'issuer', 'category', 'dateLabel', 'credentialUrl',
+          'summary', 'status', 'createdAt', 'updatedAt'
+        ])
+        && isValidString(data.title, 2, 140)
+        && isValidString(data.issuer, 2, 140)
+        && data.category in ['Certification', 'Academic', 'Competition', 'Publication']
+        && isValidString(data.dateLabel, 2, 40)
+        && isValidOptionalUrl(data.credentialUrl, 400)
+        && isValidString(data.summary, 0, 500)
+        && data.status in ['draft', 'published']
+        && data.createdAt is timestamp
+        && data.updatedAt == request.time;
+    }
+
+    function isValidSkill(data) {
+      return data.keys().hasAll([
+          'name', 'discipline', 'focusNote', 'order', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'name', 'discipline', 'focusNote', 'order', 'createdAt', 'updatedAt'
+        ])
+        && isValidString(data.name, 1, 60)
+        && data.discipline in [
+          'Frontend Development',
+          'UI/UX Design',
+          'AI & Machine Learning',
+          'Data Science',
+          'Software Engineering'
+        ]
+        && isValidString(data.focusNote, 0, 160)
+        && data.order is number
+        && data.createdAt is timestamp
+        && data.updatedAt == request.time;
+    }
+
+    function isValidInquiry(data) {
+      return data.keys().hasAll([
+          'senderName', 'senderEmail', 'subject', 'message',
+          'inquiryType', 'status', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'senderName', 'senderEmail', 'subject', 'message',
+          'inquiryType', 'status', 'createdAt', 'updatedAt'
+        ])
+        && isValidString(data.senderName, 2, 100)
+        && isValidString(data.senderEmail, 5, 140)
+        && data.senderEmail.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$')
+        && isValidString(data.subject, 2, 160)
+        && isValidString(data.message, 10, 2500)
+        && data.inquiryType in [
+          'Collaboration',
+          'Internship / Role',
+          'UI/UX & Frontend',
+          'AI / ML Project',
+          'General'
+        ]
+        && data.status in ['unread', 'read', 'archived']
+        && data.createdAt is timestamp
+        && data.updatedAt == request.time;
+    }
+
+    // Connection check document (read-only)
+    match /test/connection {
+      allow get: if true;
+    }
+
+    // Public portfolio profile
+    match /profile/{profileId} {
+      allow get: if isValidId(profileId) && profileId == 'main';
+      allow create: if isAdmin() && isValidId(profileId) && profileId == 'main' && isValidProfile(incoming());
+      allow update: if isAdmin()
+        && isValidId(profileId)
+        && profileId == 'main'
+        && isValidProfile(incoming())
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'fullName', 'headline', 'bio', 'institution', 'degree',
+          'graduationPeriod', 'cgpa', 'cgpaVerified', 'location', 'email',
+          'phone', 'resumeUrl', 'githubUrl', 'linkedinUrl', 'behanceUrl', 'updatedAt'
+        ]);
+      allow delete: if false;
+    }
+
+    // Portfolio projects
+    match /projects/{projectId} {
+      allow get: if isValidId(projectId) && (existing().status == 'published' || isAdmin());
+      allow list: if existing().status == 'published' || isAdmin();
+      allow create: if isAdmin()
+        && isValidId(projectId)
+        && isValidProject(incoming())
+        && incoming().createdAt == request.time;
+      allow update: if isAdmin()
+        && isValidId(projectId)
+        && isValidProject(incoming())
+        && incoming().createdAt == existing().createdAt
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'title', 'slug', 'category', 'summary', 'description',
+          'techStack', 'role', 'timeline', 'liveUrl', 'repoUrl',
+          'coverImage', 'featured', 'status', 'updatedAt'
+        ]);
+      allow delete: if isAdmin() && isValidId(projectId);
+    }
+
+    // Achievements & certifications
+    match /achievements/{achievementId} {
+      allow get: if isValidId(achievementId) && (existing().status == 'published' || isAdmin());
+      allow list: if existing().status == 'published' || isAdmin();
+      allow create: if isAdmin()
+        && isValidId(achievementId)
+        && isValidAchievement(incoming())
+        && incoming().createdAt == request.time;
+      allow update: if isAdmin()
+        && isValidId(achievementId)
+        && isValidAchievement(incoming())
+        && incoming().createdAt == existing().createdAt
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'title', 'issuer', 'category', 'dateLabel', 'credentialUrl',
+          'summary', 'status', 'updatedAt'
+        ]);
+      allow delete: if isAdmin() && isValidId(achievementId);
+    }
+
+    // Curated skills
+    match /skills/{skillId} {
+      allow get: if isValidId(skillId);
+      allow list: if true;
+      allow create: if isAdmin()
+        && isValidId(skillId)
+        && isValidSkill(incoming())
+        && incoming().createdAt == request.time;
+      allow update: if isAdmin()
+        && isValidId(skillId)
+        && isValidSkill(incoming())
+        && incoming().createdAt == existing().createdAt
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'name', 'discipline', 'focusNote', 'order', 'updatedAt'
+        ]);
+      allow delete: if isAdmin() && isValidId(skillId);
+    }
+
+    // Private contact inquiries (PII isolated to admin)
+    match /inquiries/{inquiryId} {
+      allow get: if isAdmin() && isValidId(inquiryId);
+      allow list: if isAdmin();
+      allow create: if isValidId(inquiryId)
+        && isValidInquiry(incoming())
+        && incoming().status == 'unread'
+        && incoming().createdAt == request.time;
+      allow update: if isAdmin()
+        && isValidId(inquiryId)
+        && isValidInquiry(incoming())
+        && incoming().createdAt == existing().createdAt
+        && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']);
+      allow delete: if isAdmin() && isValidId(inquiryId);
+    }
+  }
+}

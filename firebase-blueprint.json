@@ -1,0 +1,196 @@
+{
+  "entities": {
+    "PortfolioProfile": {
+      "title": "PortfolioProfile",
+      "description": "Public portfolio owner profile, academic credentials, and verified contact metadata for Sonu Khajotiya.",
+      "type": "object",
+      "properties": {
+        "fullName": { "type": "string", "minLength": 2, "maxLength": 80 },
+        "headline": { "type": "string", "minLength": 2, "maxLength": 140 },
+        "bio": { "type": "string", "minLength": 10, "maxLength": 1200 },
+        "institution": { "type": "string", "minLength": 2, "maxLength": 160 },
+        "degree": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "graduationPeriod": { "type": "string", "minLength": 4, "maxLength": 40 },
+        "cgpa": { "type": "string", "minLength": 1, "maxLength": 20 },
+        "cgpaVerified": { "type": "boolean" },
+        "location": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "email": { "type": "string", "minLength": 5, "maxLength": 120 },
+        "phone": { "type": "string", "maxLength": 32 },
+        "resumeUrl": { "type": "string", "maxLength": 500 },
+        "githubUrl": { "type": "string", "maxLength": 300 },
+        "linkedinUrl": { "type": "string", "maxLength": 300 },
+        "behanceUrl": { "type": "string", "maxLength": 300 },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "fullName",
+        "headline",
+        "bio",
+        "institution",
+        "degree",
+        "graduationPeriod",
+        "cgpa",
+        "cgpaVerified",
+        "location",
+        "email",
+        "phone",
+        "resumeUrl",
+        "githubUrl",
+        "linkedinUrl",
+        "behanceUrl",
+        "updatedAt"
+      ]
+    },
+    "Project": {
+      "title": "Project",
+      "description": "Portfolio project case study managed by the portfolio owner.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "minLength": 2, "maxLength": 120 },
+        "slug": { "type": "string", "minLength": 2, "maxLength": 120, "pattern": "^[a-z0-9-]+$" },
+        "category": {
+          "type": "string",
+          "enum": [
+            "UI/UX Design",
+            "Frontend Development",
+            "AI & Machine Learning",
+            "Data Science",
+            "Software Engineering"
+          ]
+        },
+        "summary": { "type": "string", "minLength": 10, "maxLength": 320 },
+        "description": { "type": "string", "minLength": 10, "maxLength": 4000 },
+        "techStack": { "type": "array" },
+        "role": { "type": "string", "maxLength": 100 },
+        "timeline": { "type": "string", "maxLength": 60 },
+        "liveUrl": { "type": "string", "maxLength": 400 },
+        "repoUrl": { "type": "string", "maxLength": 400 },
+        "coverImage": { "type": "string", "maxLength": 600 },
+        "featured": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["draft", "published"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "title",
+        "slug",
+        "category",
+        "summary",
+        "description",
+        "techStack",
+        "role",
+        "timeline",
+        "liveUrl",
+        "repoUrl",
+        "coverImage",
+        "featured",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Achievement": {
+      "title": "Achievement",
+      "description": "Verified certification, academic milestone, or competition record.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "minLength": 2, "maxLength": 140 },
+        "issuer": { "type": "string", "minLength": 2, "maxLength": 140 },
+        "category": {
+          "type": "string",
+          "enum": ["Certification", "Academic", "Competition", "Publication"]
+        },
+        "dateLabel": { "type": "string", "minLength": 2, "maxLength": 40 },
+        "credentialUrl": { "type": "string", "maxLength": 400 },
+        "summary": { "type": "string", "maxLength": 500 },
+        "status": { "type": "string", "enum": ["draft", "published"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "title",
+        "issuer",
+        "category",
+        "dateLabel",
+        "credentialUrl",
+        "summary",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "SkillItem": {
+      "title": "SkillItem",
+      "description": "Skill or focus capability curated under a primary engineering discipline.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "discipline": {
+          "type": "string",
+          "enum": [
+            "Frontend Development",
+            "UI/UX Design",
+            "AI & Machine Learning",
+            "Data Science",
+            "Software Engineering"
+          ]
+        },
+        "focusNote": { "type": "string", "maxLength": 160 },
+        "order": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "discipline", "focusNote", "order", "createdAt", "updatedAt"]
+    },
+    "ContactInquiry": {
+      "title": "ContactInquiry",
+      "description": "Private contact inquiry submitted by a portfolio visitor. Readable only by the verified admin.",
+      "type": "object",
+      "properties": {
+        "senderName": { "type": "string", "minLength": 2, "maxLength": 100 },
+        "senderEmail": { "type": "string", "minLength": 5, "maxLength": 140 },
+        "subject": { "type": "string", "minLength": 2, "maxLength": 160 },
+        "message": { "type": "string", "minLength": 10, "maxLength": 2500 },
+        "inquiryType": {
+          "type": "string",
+          "enum": ["Collaboration", "Internship / Role", "UI/UX & Frontend", "AI / ML Project", "General"]
+        },
+        "status": { "type": "string", "enum": ["unread", "read", "archived"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "senderName",
+        "senderEmail",
+        "subject",
+        "message",
+        "inquiryType",
+        "status",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/profile/{profileId}": {
+      "schema": { "$ref": "#/entities/PortfolioProfile" },
+      "description": "Public portfolio owner profile document (main)."
+    },
+    "/projects/{projectId}": {
+      "schema": { "$ref": "#/entities/Project" },
+      "description": "Portfolio project case studies; published entries are public, drafts are admin-only."
+    },
+    "/achievements/{achievementId}": {
+      "schema": { "$ref": "#/entities/Achievement" },
+      "description": "Verified achievements and certifications; published entries are public, drafts are admin-only."
+    },
+    "/skills/{skillId}": {
+      "schema": { "$ref": "#/entities/SkillItem" },
+      "description": "Curated skills organized by discipline."
+    },
+    "/inquiries/{inquiryId}": {
+      "schema": { "$ref": "#/entities/ContactInquiry" },
+      "description": "Visitor contact form submissions with PII strictly restricted to admin reads."
+    }
+  }
+}
